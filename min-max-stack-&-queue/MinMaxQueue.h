@@ -11,8 +11,8 @@ class MinMaxQueue
 	void oneToAnother(); //transfer all elements from first stack to second
 public:
 	void push(const T& element);//O(1)
-	const T& front(); //amortized analysised time complexity O(1)
-	void pop(); //amortized analysised time complexity O(1)
+	const T& front(); //amortized analysis time complexity O(1)
+	void pop(); //amortized analysis time complexity O(1)
 	bool empty();
 	const T& min();//O(1)
 	const T& max();//O(1)
