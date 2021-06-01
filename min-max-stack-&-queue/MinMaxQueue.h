@@ -71,5 +71,5 @@ const T& MinMaxQueue<T>::max()
 	if (m_stack.empty() && m_qSemantic.empty()) throw std::length_error("Empty queue");
 	if (m_stack.empty()) return m_qSemantic.max();
 	if (m_qSemantic.empty()) return m_stack.max();
-	return std::min(m_stack.max(), m_qSemantic.max());
+	return std::max(m_stack.max(), m_qSemantic.max());
 }
