@@ -271,6 +271,7 @@ bool Graph<T>::hasCycleFrom(const T& vertex)
 template<typename T>
 bool Graph<T>::isCyclic()
 {
+	if (m_vertices.size() < 3) return false;
 	for (size_t i = 0;i<m_vertices.size();i++)
 		if (hasCycleFrom(m_vertices[i])) return true;
 	return false;
@@ -279,8 +280,7 @@ bool Graph<T>::isCyclic()
 template<typename T>
 bool Graph<T>::IsConnected()
 {
-	if (m_vertices.size() < 3) return false;
-
+	if (m_vertices.size() == 0) return false;
 	std::stack<T> s;
 	s.push(m_vertices[0]);
 	std::vector<T> visited;
