@@ -17,6 +17,7 @@ class Graph
 	size_t indexOf(const T& elem);
 
 	bool isVisited(std::vector<T> v, const T& e)const;
+	bool hasCycleFrom(const T& vertex);
 
 public:
 
@@ -40,6 +41,8 @@ public:
 	//------------------------------------------------
 
 	std::vector<T> bfs(const T& start, const T& end);
+	bool isCyclic();
+	bool IsConnected();
 };
 
 template<typename T>
@@ -154,13 +157,21 @@ const T& Graph<T>::at(const size_t& i)const
 
 template<typename T>
 std::vector<T> Graph<T>::neighbours(const T& elem)const
-{
-	std::vector<T> _neighbours;
+{  
+	std::vector<bool> _neighbours;
+	for (size_t i = 0;i < m_vertices.size();i++)
+		_neighbours.push_back(false);
 
 	for (size_t i = 0;i < m_edges.size();i++)
 		if (m_vertices[std::get<0>(m_edges[i])] == elem)
-			_neighbours.push_back(m_vertices[std::get<1>(m_edges[i])]);
-	return _neighbours;
+			_neighbours[std::get<1>(m_edges[i])] = true;
+
+	std::vector<T> forReturn;
+	for (size_t i = 0;i < _neighbours.size();i++)
+		if (_neighbours[i]) forReturn.push_back(m_vertices[i]);
+
+	//O(n) complexity
+	return forReturn;
 }
 
 template<typename T>
@@ -211,7 +222,6 @@ std::vector<T> Graph<T>::bfs(const T& start, const T& end)
 
 	while (!q.empty())
 	{
-		visited.push_back(q.front().first);
 		std::vector<T> adj = neighbours(q.front().first);
 
 		for (size_t i = 0;i < adj.size();i++)
@@ -219,13 +229,74 @@ std::vector<T> Graph<T>::bfs(const T& start, const T& end)
 			{   //updating road
 				q.front().second.push_back(q.front().first);
 				if (adj[i] == end)
-				{
+				{   //make the road full
 					q.front().second.push_back(adj[i]);
 					return std::move(q.front().second);
 				}
 				q.push(std::pair<T, std::vector<T>>(adj[i], q.front().second));
+				visited.push_back(adj[i]);
 			}
 		q.pop();
 	}
 	throw std::logic_error("cant find path from start to end");
+}
+
+
+template<typename T>
+bool Graph<T>::hasCycleFrom(const T& vertex)
+{
+	std::stack<std::pair<T, T>> _stack; // element and his "parent"
+	std::vector<T> visited;
+	_stack.push(std::pair<T,T>(vertex, vertex));
+	visited.push_back(vertex);
+
+	while (!_stack.empty())
+	{
+		std::pair<T, T> temp = _stack.top();
+		_stack.pop();
+		std::vector<T> adj = neighbours(temp.first);
+		for (size_t i = 0;i < adj.size();i++)
+		{								  
+			if (!isVisited(visited, adj[i]))
+			{
+				_stack.push(std::pair<T,T>(adj[i],temp.first));
+				visited.push_back(adj[i]);
+			}
+			else if (adj[i] != temp.second) return true;
+		}
+	}
+	return false;;
+}
+
+template<typename T>
+bool Graph<T>::isCyclic()
+{
+	for (size_t i = 0;i<m_vertices.size();i++)
+		if (hasCycleFrom(m_vertices[i])) return true;
+	return false;
+}
+
+template<typename T>
+bool Graph<T>::IsConnected()
+{
+	if (m_vertices.size() < 3) return false;
+
+	std::stack<T> s;
+	s.push(m_vertices[0]);
+	std::vector<T> visited;
+	visited.push_back(s.top());
+
+	while (!s.empty())
+	{
+		T temp = s.top();
+		s.pop();
+		std::vector<T> adj = neighbours(temp);
+		for (size_t i = 0;i < adj.size();i++)
+			if (!isVisited(visited, adj[i]))
+			{
+				s.push(adj[i]);
+				visited.push_back(adj[i]);
+			}
+	}
+	return visited.size() == m_vertices.size();
 }
