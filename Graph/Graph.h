@@ -28,6 +28,7 @@ public:
 	std::vector<T> parentsToPath(std::vector<size_t> parents, size_t startIndex, size_t endIndex);
 	void dfs1StrongComponentsHelp(size_t vertex, std::vector<bool>& visited, std::stack<size_t>& s);
 	void dfs2StrongComponentsHelp(size_t vertex, std::vector<bool>& visited, std::vector<size_t>& components, size_t comCount);
+	std::vector < std::vector<T>> makeComponents(const std::vector<size_t>& components);
 public:
 	Graph(bool isOriented);
 	bool add_vertex(const T& v);
@@ -48,7 +49,14 @@ public:
 	bool isConnected();
 	bool isBipartite();
 	void reverseEdges();
-	std::vector<size_t> strongConnectedComponents();
+	std::vector<std::vector<T>>  strongConnectedComponents();
+	/*TODOstd::vector<T> topologicalSort()
+	FloydWarshall
+	Kruskal
+	Prim
+	bellmanFord
+	dijkstra
+	*/
 };
 
 template<typename T>
@@ -125,8 +133,8 @@ std::vector<T> Graph<T>::parentsToPath(std::vector<size_t> parents, size_t start
 }
 
 template<typename T>
-void Graph<T>::dfs1StrongComponentsHelp(size_t vertex, std::vector<bool>& visited,std::stack<size_t>& s)
-{ 
+void Graph<T>::dfs1StrongComponentsHelp(size_t vertex, std::vector<bool>& visited, std::stack<size_t>& s)
+{
 	if (visited[vertex]) return;
 	visited[vertex] = true;
 	std::vector<size_t> adj = neighboursIndex(vertex);
@@ -144,6 +152,23 @@ void Graph<T>::dfs2StrongComponentsHelp(size_t vertex, std::vector<bool>& visite
 	std::vector<size_t> adj = neighboursIndex(vertex);
 	for (size_t i = 0;i < adj.size();i++)
 		if (!visited[adj[i]]) dfs2StrongComponentsHelp(adj[i], visited, components, comCount);
+}
+
+template<typename T>
+std::vector < std::vector<T>> Graph<T>::makeComponents(const std::vector<size_t>& components)
+{
+	size_t max = components[0];
+	for (size_t i = 1;i < components.size();i++)
+		if (max < components[i]) max = components[i];
+
+	std::vector<std::vector<T>> forReturn;
+	for (size_t i = 0;i <= max;i++)
+		forReturn.push_back(std::vector<T>());
+
+	for (size_t i = 1;i < components.size();i++)
+		forReturn[components[i]].push_back(m_vertices[i]);
+
+	return std::move(forReturn);
 }
 
 template<typename T>
@@ -165,7 +190,7 @@ bool  Graph<T>::add_edge(const T& fst, const T& snd, int weight)
 		size_t fst_index = indexOf(fst);
 		size_t snd_index = indexOf(snd);
 		m_edges.push_back(Edge(fst_index, snd_index, weight));
-		if (!m_isOriented && !(fst == snd)) m_edges.push_back(Edge(snd_index , fst_index, weight));
+		if (!m_isOriented && !(fst == snd)) m_edges.push_back(Edge(snd_index, fst_index, weight));
 		return true;
 	}
 	catch (...)
@@ -368,7 +393,7 @@ void Graph<T>::reverseEdges()
 }
 
 template<typename T>
-std::vector<size_t> Graph<T>::strongConnectedComponents()
+std::vector<std::vector<T>> Graph<T>::strongConnectedComponents()
 {
 	std::stack<size_t> _stack;
 	size_t componentNum = 0;
@@ -382,7 +407,7 @@ std::vector<size_t> Graph<T>::strongConnectedComponents()
 
 	for (size_t i = 0;i < m_vertices.size();i++)
 		dfs1StrongComponentsHelp(i, visited, _stack);
-	
+
 	Graph<T> gReverse = *this;
 	gReverse.reverseEdges();
 	for (size_t i = 0;i < visited.size();i++)
