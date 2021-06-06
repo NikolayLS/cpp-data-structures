@@ -21,14 +21,14 @@ public:
 	std::vector<Edge> m_edges;
 	bool m_isOriented;
 
-	bool isVertex(const T& elem);
-	size_t indexOf(const T& elem);
+	bool isVertex(const T& elem)const;
+	size_t indexOf(const T& elem)const;
 	bool hasCycleFrom(const size_t& vertexIndex)const;
-	std::vector<T> indexesToT(std::vector<size_t> indexes);
-	std::vector<T> parentsToPath(std::vector<size_t> parents, size_t startIndex, size_t endIndex);
-	void dfs1StrongComponentsHelp(size_t vertex, std::vector<bool>& visited, std::stack<size_t>& s);
-	void dfs2StrongComponentsHelp(size_t vertex, std::vector<bool>& visited, std::vector<size_t>& components, size_t comCount);
-	std::vector < std::vector<T>> makeComponents(const std::vector<size_t>& components);
+	std::vector<T> indexesToT(std::vector<size_t> indexes)const;
+	std::vector<T> parentsToPath(std::vector<size_t> parents, size_t startIndex, size_t endIndex)const;
+	void dfs1StrongComponentsHelp(size_t vertex, std::vector<bool>& visited, std::stack<size_t>& s)const;
+	void dfs2StrongComponentsHelp(size_t vertex, std::vector<bool>& visited, std::vector<size_t>& components, size_t comCount)const;
+	std::vector < std::vector<T>> makeComponents(const std::vector<size_t>& components)const;
 public:
 	Graph(bool isOriented);
 	bool add_vertex(const T& v);
@@ -44,12 +44,12 @@ public:
 	//------------------------------------------------
 	//algorithms
 	//------------------------------------------------
-	std::vector<T> bfs(const T& start, const T& end);
-	bool isCyclic();
-	bool isConnected();
-	bool isBipartite();
+	std::vector<T> bfs(const T& start, const T& end)const;
+	bool isCyclic()const;
+	bool isConnected()const;
+	bool isBipartite()const;
 	void reverseEdges();
-	std::vector<std::vector<T>>  strongConnectedComponents();
+	std::vector<std::vector<T>>  strongConnectedComponents()const;
 	/*TODOstd::vector<T> topologicalSort()
 	FloydWarshall
 	Kruskal
@@ -60,7 +60,7 @@ public:
 };
 
 template<typename T>
-bool Graph<T>::isVertex(const T& elem)
+bool Graph<T>::isVertex(const T& elem)const
 {
 	for (size_t i = 0;i < m_vertices.size();i++)
 		if (m_vertices[i] == elem) return true;
@@ -68,7 +68,7 @@ bool Graph<T>::isVertex(const T& elem)
 }
 
 template<typename T>
-size_t Graph<T>::indexOf(const T& elem)
+size_t Graph<T>::indexOf(const T& elem)const
 {
 	for (size_t i = 0;i < m_vertices.size();i++)
 		if (m_vertices[i] == elem) return i;
@@ -105,7 +105,7 @@ bool Graph<T>::hasCycleFrom(const size_t& vertexIndex)const
 }
 
 template<typename T>
-std::vector<T> Graph<T>::indexesToT(std::vector<size_t> indexes)
+std::vector<T> Graph<T>::indexesToT(std::vector<size_t> indexes)const
 {
 	std::vector<T> forReturn;
 	for (size_t i = 0;i < indexes.size();i++)
@@ -114,7 +114,7 @@ std::vector<T> Graph<T>::indexesToT(std::vector<size_t> indexes)
 }
 
 template<typename T>
-std::vector<T> Graph<T>::parentsToPath(std::vector<size_t> parents, size_t startIndex, size_t endIndex)
+std::vector<T> Graph<T>::parentsToPath(std::vector<size_t> parents, size_t startIndex, size_t endIndex)const
 {
 	std::vector<size_t> path;
 	path.push_back(endIndex);
@@ -133,7 +133,7 @@ std::vector<T> Graph<T>::parentsToPath(std::vector<size_t> parents, size_t start
 }
 
 template<typename T>
-void Graph<T>::dfs1StrongComponentsHelp(size_t vertex, std::vector<bool>& visited, std::stack<size_t>& s)
+void Graph<T>::dfs1StrongComponentsHelp(size_t vertex, std::vector<bool>& visited, std::stack<size_t>& s)const
 {
 	if (visited[vertex]) return;
 	visited[vertex] = true;
@@ -144,7 +144,7 @@ void Graph<T>::dfs1StrongComponentsHelp(size_t vertex, std::vector<bool>& visite
 }
 
 template<typename T>
-void Graph<T>::dfs2StrongComponentsHelp(size_t vertex, std::vector<bool>& visited, std::vector<size_t>& components, size_t comCount)
+void Graph<T>::dfs2StrongComponentsHelp(size_t vertex, std::vector<bool>& visited, std::vector<size_t>& components, size_t comCount)const
 {
 	if (visited[vertex]) return;
 	visited[vertex] = true;
@@ -155,7 +155,7 @@ void Graph<T>::dfs2StrongComponentsHelp(size_t vertex, std::vector<bool>& visite
 }
 
 template<typename T>
-std::vector < std::vector<T>> Graph<T>::makeComponents(const std::vector<size_t>& components)
+std::vector < std::vector<T>> Graph<T>::makeComponents(const std::vector<size_t>& components)const
 {
 	size_t max = components[0];
 	for (size_t i = 1;i < components.size();i++)
@@ -276,7 +276,7 @@ bool Graph<T>::areConnected(const T& fst, const T& snd)const
 }
 
 template<typename T>
-std::vector<T> Graph<T>::bfs(const T& start, const T& end)
+std::vector<T> Graph<T>::bfs(const T& start, const T& end)const
 {
 	size_t startIndex = indexOf(start), endIndex = indexOf(end);
 	std::queue<size_t> _queue;
@@ -311,7 +311,7 @@ std::vector<T> Graph<T>::bfs(const T& start, const T& end)
 }
 
 template<typename T>
-bool Graph<T>::isCyclic()
+bool Graph<T>::isCyclic()const
 {
 	if (m_vertices.size() < 3) return false;
 	for (size_t i = 0;i < m_vertices.size();i++)
@@ -320,7 +320,7 @@ bool Graph<T>::isCyclic()
 }
 
 template<typename T>
-bool Graph<T>::isConnected()
+bool Graph<T>::isConnected()const
 {
 	if (m_vertices.size() == 0) return false;
 	std::stack<size_t> s;
@@ -349,7 +349,7 @@ bool Graph<T>::isConnected()
 }
 
 template<typename T>
-bool Graph<T>::isBipartite()
+bool Graph<T>::isBipartite()const
 {
 	short constexpr white = 0, blue = 1, red = 2;
 
@@ -393,7 +393,7 @@ void Graph<T>::reverseEdges()
 }
 
 template<typename T>
-std::vector<std::vector<T>> Graph<T>::strongConnectedComponents()
+std::vector<std::vector<T>> Graph<T>::strongConnectedComponents()const
 {
 	std::stack<size_t> _stack;
 	size_t componentNum = 0;
