@@ -5,9 +5,8 @@
 #include <stack>
 #include <queue>
 
-
 template<typename T>
-class Graph
+class Graph //oriented and multigraph
 {
 	struct Edge
 	{
@@ -19,18 +18,17 @@ class Graph
 public:
 	std::vector<T> m_vertices;
 	std::vector<Edge> m_edges;
-	bool m_isOriented;
 
-	bool isVertex(const T& elem)const;
-	size_t indexOf(const T& elem)const;
 	bool hasCycleFrom(const size_t& vertexIndex)const;
 	std::vector<T> indexesToT(const std::vector<size_t>& indexes)const;
 	std::vector<T> parentsToPath(const std::vector<size_t>& parents,const size_t& startIndex, const size_t& endIndex)const;
 	void dfs1StrongComponentsHelp(const size_t& vertex, std::vector<bool>& visited, std::stack<size_t>& s)const;
 	void dfs2StrongComponentsHelp(const size_t& vertex, std::vector<bool>& visited, std::vector<size_t>& components,const size_t& comCount)const;
 	std::vector < std::vector<T>> makeComponents(const std::vector<size_t>& components)const;
+	bool isThereRoadsFromVToAllVertices(const size_t& vertex)const;
 public:
-	Graph(bool isOriented);
+	size_t indexOf(const T& elem)const;
+	bool isVertex(const T& elem)const;
 	bool add_vertex(const T& v);
 	bool add_edge(const T& fst, const T& snd, int weight = 1);
 	T& operator[](const size_t& i);
@@ -39,7 +37,6 @@ public:
 	const T& at(const size_t& i)const;
 	std::vector<T> neighbours(const T& elem)const;
 	std::vector<size_t> neighboursIndex(const size_t& i)const;
-	bool isOriented()const;
 	bool areConnected(const T& fst, const T& snd)const;
 	//------------------------------------------------
 	//algorithms
@@ -78,8 +75,8 @@ size_t Graph<T>::indexOf(const T& elem)const
 template<typename T>
 bool Graph<T>::hasCycleFrom(const size_t& vertexIndex)const
 {
-	std::stack<std::pair<size_t, size_t>> _stack; // element and his "parent"
-	_stack.push(std::pair<size_t, size_t>(vertexIndex, vertexIndex));
+	std::stack<size_t> _stack;
+	_stack.push(vertexIndex);
 
 	std::vector<size_t> visited;
 	for (size_t i = 0;i < m_vertices.size();i++)
@@ -88,17 +85,17 @@ bool Graph<T>::hasCycleFrom(const size_t& vertexIndex)const
 
 	while (!_stack.empty())
 	{
-		std::pair<size_t, size_t> temp = _stack.top();
+		size_t temp = _stack.top();
 		_stack.pop();
 		std::vector<size_t> adj = neighboursIndex(temp.first);
 		for (size_t i = 0;i < adj.size();i++)
 		{
 			if (!visited[adj[i]])
 			{
-				_stack.push(std::pair<size_t, size_t>(adj[i], temp.first));
+				_stack.push(adj[i]);
 				visited[adj[i]] = true;
 			}
-			else if (adj[i] != temp.second && adj[i] != temp.first) return true;
+			else return true;
 		}
 	}
 	return false;;
@@ -172,7 +169,34 @@ std::vector < std::vector<T>> Graph<T>::makeComponents(const std::vector<size_t>
 }
 
 template<typename T>
-Graph<T>::Graph(bool isOriented) :m_isOriented(isOriented) {}
+bool  Graph<T>::isThereRoadsFromVToAllVertices(const size_t& vertex)const
+{
+	std::stack<size_t> s;
+	s.push(vertex);
+
+	std::vector<bool> visited;
+	for (size_t i = 0;i < m_vertices.size();i++)
+		visited.push_back(false);
+	visited[vertex] = true;
+
+	while (!s.empty())
+	{
+		size_t curr = s.top();
+		s.pop();
+		std::vector<size_t> adj = neighboursIndex(curr);
+		for (size_t i = 0;i < adj.size();i++)
+			if (!visited[adj[i]])
+			{
+				s.push(adj[i]);
+				visited[adj[i]] = true;
+			}
+	}
+	for (size_t i = 0;i < visited.size();i++)
+		if (!visited[i]) return false;
+	return true;
+}
+
+
 
 template<typename T>
 bool Graph<T>::add_vertex(const T& v)
@@ -190,7 +214,6 @@ bool  Graph<T>::add_edge(const T& fst, const T& snd, int weight)
 		size_t fst_index = indexOf(fst);
 		size_t snd_index = indexOf(snd);
 		m_edges.push_back(Edge(fst_index, snd_index, weight));
-		if (!m_isOriented && !(fst == snd)) m_edges.push_back(Edge(snd_index, fst_index, weight));
 		return true;
 	}
 	catch (...)
@@ -261,12 +284,6 @@ std::vector<size_t> Graph<T>::neighboursIndex(const size_t& index)const
 }
 
 template<typename T>
-bool  Graph<T>::isOriented()const
-{
-	return m_isOriented;
-}
-
-template<typename T>
 bool Graph<T>::areConnected(const T& fst, const T& snd)const
 {
 	for (size_t i = 0;i < m_edges.size();i++)
@@ -323,28 +340,9 @@ template<typename T>
 bool Graph<T>::isConnected()const
 {
 	if (m_vertices.size() == 0) return false;
-	std::stack<size_t> s;
-	s.push(0);//random vertex
-
-	std::vector<bool> visited;
-	for (size_t i = 0;i < m_vertices.size();i++)
-		visited.push_back(false);
-	visited[0] = true;
-
-	while (!s.empty())
-	{
-		size_t curr = s.top();
-		s.pop();
-		std::vector<size_t> adj = neighboursIndex(curr);
-		for (size_t i = 0;i < adj.size();i++)
-			if (!visited[adj[i]])
-			{
-				s.push(adj[i]);
-				visited[adj[i]] = true;
-			}
-	}
-	for (size_t i = 0;i < visited.size();i++)
-		if (!visited[i]) return false;
+	for (size_t i = 0; i < m_vertices.size();i++)
+		if (!isThereRoadsFromVToAllVertices(i))
+			return false;
 	return true;
 }
 
